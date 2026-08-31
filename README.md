@@ -1,0 +1,34 @@
+# جديد — النموذج التفاعلي (Jadeed Interactive Prototype)
+
+نموذج تفاعلي كامل لمنصة «جديد» — **٨٥ شاشة وحالة** عبر ٣ تطبيقات: العميل (34) · التاجر (29) · لوحة الإدارة (22).
+اجتاز تدقيق QA عميقًا من ٣ مراحل (التقارير في `../Phase1..3_*_QA_Report.md`).
+
+## التشغيل المحلي
+```bash
+npm install
+npm run dev        # وضع التطوير
+npm run build      # بناء إنتاجي → dist/
+npm run preview    # معاينة البناء
+```
+
+## التقنيات
+React 18 + Vite · Tailwind CSS (هوية Jadeed المخصصة) · Framer Motion · Lucide Icons · RTL كامل · خط Tajawal
+
+## البنية
+```
+src/
+├── App.jsx                  # Workbench: ٣ تبويبات + سايدبار قابل للطي + إطارات العرض
+├── ui/                      # kit, nav, registries (٣ فهرسة), mstore, astore, ashell, mnav
+├── screens/                 # A-01..A-18 (عميل) · B-01..B-19 (تاجر) · admin/C-* (إدارة)
+└── data/                    # db.js (عميل) · merchant.js (تاجر) · admin.js (إدارة) — بيانات dummy مشتركة
+```
+
+## الحالة المشتركة الحية (Cross-Platform)
+- `mstore.jsx`: طلبات ومنتجات التاجر + مفتاح فتح/إغلاق المتجر (ينعكس على A-06)
+- `astore.jsx`: قرارات الإدارة — توثيق/حظر/فئات/متاجر معتمدة (تنعكس على A-06/A-07/A-17/B-11)
+
+## فحوص الجودة
+```bash
+python3 qa_check.py    # ٦ بوابات (فهارس 34/29/22، الاستيرادات، أهداف go، تفرد المفاتيح)
+node smoke.mjs         # SSR لكل شاشة (85/85)
+```
