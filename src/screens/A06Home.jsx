@@ -1,10 +1,10 @@
 import { motion } from 'framer-motion'
 import { Search, ChevronDown, ChevronLeft, MapPin, MapPinOff, PackageOpen, RotateCcw } from 'lucide-react'
-import { StatusBar, Logo, BottomNav, RatingChip, fadeUp } from '../ui/kit.jsx'
+import { StatusBar, Logo, BottomNav, RatingChip, fadeUp, ProductIcon, tileCls } from '../ui/kit.jsx'
 import { useNav } from '../ui/nav.jsx'
 import { useMStore } from '../ui/mstore.jsx'
 import { useAStore } from '../ui/astore.jsx'
-import { stores } from '../data/db.js'
+import { stores, products, fmt } from '../data/db.js'
 
 /* ── بطاقة متجر ── */
 function StoreCard({ s, i }) {
@@ -177,6 +177,30 @@ export default function A06({ state = 'default' }) {
 
       {/* المحتوى */}
       <div className="no-scrollbar grow overflow-y-auto px-4 pb-5">
+        {/* شريط المنتجات القريبة — اكتشاف مباشر للمنتجات دون المساس بـ«المتاجر أولًا» (UC-03) */}
+        <div className="mt-4">
+          <div className="mb-2 flex items-center justify-between">
+            <p className="text-xs font-extrabold">منتجات قريبة منك</p>
+            <button onClick={() => go('a09')} className="text-[11px] font-extrabold text-jadeed-purple transition hover:opacity-80">بحث المنتجات ←</button>
+          </div>
+          <div className="no-scrollbar -mx-4 flex gap-2.5 overflow-x-auto px-4 pb-1">
+            {products.filter((p) => p.stock).slice(0, 6).map((p, i) => (
+              <button
+                key={p.id}
+                onClick={() => go('a08')}
+                className="w-28 shrink-0 rounded-2xl border border-jadeed-line bg-white p-2.5 text-start shadow-soft transition hover:shadow-pop"
+              >
+                <div className={`flex h-14 items-center justify-center rounded-xl ${tileCls(i)}`}>
+                  <ProductIcon name={p.icon} size={24} />
+                </div>
+                <p className="mt-1.5 truncate text-[10px] font-extrabold">{p.name}</p>
+                <p className="truncate text-[9px] text-jadeed-muted">{p.store}</p>
+                <p className="mt-0.5 text-[10px] font-extrabold text-jadeed-purple">{fmt(p.price)}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="mb-3 mt-5 flex items-end justify-between">
           <div>
             <h1 className="text-base font-extrabold">المتاجر القريبة</h1>

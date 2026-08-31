@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { LogIn, Package, Store, TrendingUp, UserPlus } from 'lucide-react'
+import { ChevronRight, Package, Store, TrendingUp, UserPlus } from 'lucide-react'
 import { StatusBar, Logo, fadeUp } from '../ui/kit.jsx'
 import { useNav } from '../ui/nav.jsx'
 
@@ -25,7 +25,8 @@ export default function B01() {
         </motion.div>
 
         <motion.div variants={fadeUp} initial="hidden" animate="show">
-          <p className="text-[11px] font-bold tracking-wide text-jadeed-yellow" dir="ltr">JADEED FOR BUSINESS</p>
+          <span className="rounded-full bg-white/15 px-3 py-1 text-[10px] font-extrabold backdrop-blur">اختيارك: حساب تاجر ✓ — أنت داخل تطبيقك نفسه</span>
+          <p className="mt-2 text-[11px] font-bold tracking-wide text-jadeed-yellow" dir="ltr">JADEED FOR BUSINESS</p>
           <h1 className="mt-1 text-2xl font-extrabold leading-8">وسّع مشروعك مع «جديد»</h1>
           <p className="mt-1.5 text-xs leading-6 text-white/75">افتح متجرك أمام آلاف العملاء في مديريتهم — أدر كل شيء من هاتفك</p>
         </motion.div>
@@ -47,14 +48,15 @@ export default function B01() {
             onClick={() => go('b02')}
             className="w-full rounded-2xl bg-jadeed-orange py-3.5 text-sm font-extrabold shadow-pop transition hover:bg-jadeed-orange-light active:scale-[.98]"
           >
-            <span className="inline-flex items-center gap-2"><UserPlus size={18} /> سجّل كتاجر</span>
+            <span className="inline-flex items-center gap-2"><UserPlus size={18} /> متابعة — أبدأ تسجيل مشروعي</span>
           </button>
           <button
-            onClick={() => go('b07')}
+            onClick={() => go('a01')}
             className="w-full rounded-2xl border border-white/40 bg-white/10 py-3.5 text-sm font-extrabold backdrop-blur transition hover:bg-white/20 active:scale-[.98]"
           >
-            <span className="inline-flex items-center gap-2"><LogIn size={18} /> دخول تجار</span>
+            <span className="inline-flex items-center gap-2"><ChevronRight size={18} /> رجوع إلى التطبيق</span>
           </button>
+          <p className="text-center text-[10px] text-white/55">الخطوة التالية: بيانات مشروعك في ٩ حقول موحّدة</p>
         </motion.div>
       </div>
 

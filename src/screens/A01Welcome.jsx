@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { UserPlus, LogIn, ShieldCheck } from 'lucide-react'
+import { UserPlus, LogIn, ShieldCheck, Store } from 'lucide-react'
 import { StatusBar, Logo, fadeUp } from '../ui/kit.jsx'
 import { useNav } from '../ui/nav.jsx'
 
@@ -42,6 +42,14 @@ export default function A01() {
           >
             <span className="inline-flex items-center gap-2"><LogIn size={18} /> تسجيل الدخول</span>
           </button>
+          {/* تطبيق واحد بأدوار: نفس الحساب يشتري ويبيع — مسار التاجر يبدأ من هنا */}
+          <button
+            onClick={() => go('b01')}
+            className="w-full rounded-2xl border border-jadeed-yellow/40 bg-jadeed-yellow/10 py-3 text-xs font-extrabold text-jadeed-yellow backdrop-blur transition hover:bg-jadeed-yellow/20 active:scale-[.98]"
+          >
+            <span className="inline-flex items-center gap-2"><Store size={15} /> سجّل كتاجر وابدأ متجرك</span>
+          </button>
+          <p className="text-center text-[10px] text-white/50">تطبيق واحد — سجّل مرة واحدة، تسوّق وابدأ متجرك من حسابك نفسه</p>
         </motion.div>
       </div>
 

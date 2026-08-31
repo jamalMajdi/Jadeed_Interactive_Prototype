@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { ChevronLeft, MapPin, FileText, Bell, Trash2, LogOut, Pencil } from 'lucide-react'
+import { ChevronLeft, MapPin, FileText, Bell, Trash2, LogOut, Pencil, Store } from 'lucide-react'
 import { StatusBar, Logo, BottomNav, fadeUp } from '../ui/kit.jsx'
 import { useNav } from '../ui/nav.jsx'
 import { user } from '../data/db.js'
@@ -53,6 +53,17 @@ export default function A16() {
             <span className="grow">
               <span className="block text-xs font-extrabold">طلباتي</span>
               <span className="block text-[11px] text-jadeed-muted">٥ طلبات · طلب جارٍ واحد</span>
+            </span>
+            <ChevronLeft size={16} className="text-jadeed-ghost" />
+          </button>
+
+          <div className="h-px bg-jadeed-line/60" />
+
+          <button onClick={() => go('b01')} className="flex w-full items-center gap-3 p-4 text-start transition hover:bg-jadeed-bg">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-jadeed-yellow-tint text-jadeed-yellow-dark"><Store size={19} /></span>
+            <span className="grow">
+              <span className="block text-xs font-extrabold">أضف متجرك على جديد</span>
+              <span className="block text-[11px] text-jadeed-muted">سجّل كتاجر — حسابك نفسه يبيع ويشتري · التوثيق ٢٤–٤٨ ساعة</span>
             </span>
             <ChevronLeft size={16} className="text-jadeed-ghost" />
           </button>
