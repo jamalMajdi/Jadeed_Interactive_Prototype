@@ -280,6 +280,9 @@ export default function App() {
   }, []);
 
   const SIDEBAR_W = xl ? 320 : md ? 288 : 256;
+  const isMobile = !isRow;
+  const mobileMotion = { duration: 0.18, ease: "easeOut" };
+  const desktopSpring = { type: "spring", stiffness: 320, damping: 34 };
 
   const go = (k) => {
     setKey(k);
@@ -325,22 +328,23 @@ export default function App() {
         <MStoreProvider>
           <div className="flex h-screen flex-col overflow-hidden bg-jadeed-bg font-tajawal text-jadeed-black sm:flex-row">
             <AnimatePresence>
-              {!isRow && mobileMenuOpen && (
+              {isMobile && mobileMenuOpen && (
                 <>
                   <motion.button
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
+                    transition={isMobile ? mobileMotion : desktopSpring}
                     onClick={() => setMobileMenuOpen(false)}
                     aria-label="إغلاق القائمة"
-                    className="fixed inset-0 z-30 bg-jadeed-black/45 backdrop-blur-[1px]"
+                    className="fixed inset-0 z-30 bg-jadeed-black/35"
                   />
 
                   <motion.aside
                     initial={{ x: "100%" }}
                     animate={{ x: 0 }}
                     exit={{ x: "100%" }}
-                    transition={{ type: "spring", stiffness: 320, damping: 34 }}
+                    transition={isMobile ? mobileMotion : desktopSpring}
                     className="fixed inset-y-0 right-0 z-40 w-[82%] max-w-[320px] overflow-hidden bg-[#17141F] text-white shadow-phone"
                   >
                     <div className="flex h-full w-full flex-col bg-[#17141F]">
@@ -448,7 +452,7 @@ export default function App() {
               <motion.aside
                 initial={false}
                 animate={{ width: collapsed ? 0 : SIDEBAR_W }}
-                transition={{ type: "spring", stiffness: 320, damping: 34 }}
+                transition={desktopSpring}
                 className="relative h-[44vh] shrink-0 overflow-hidden bg-[#17141F] text-white sm:sticky sm:top-0 sm:h-screen"
               >
                 <motion.div
@@ -567,7 +571,7 @@ export default function App() {
             >
               <header className="z-20 flex h-11 shrink-0 items-center justify-between gap-3 border-b border-jadeed-line bg-white/80 px-4 backdrop-blur">
                 <div className="flex min-w-0 items-center gap-2.5">
-                  {!isRow && (
+                  {isMobile && (
                     <button
                       onClick={() => setMobileMenuOpen(true)}
                       title="فتح القائمة"
@@ -669,9 +673,13 @@ export default function App() {
                 /* ═══ العميل/التاجر: إطار الهاتف ═══ */
                 <DeviceStage>
                   <motion.div
-                    initial={{ y: 18, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ type: "spring", stiffness: 200, damping: 24 }}
+                    initial={isMobile ? { opacity: 0 } : { y: 18, opacity: 0 }}
+                    animate={isMobile ? { opacity: 1 } : { y: 0, opacity: 1 }}
+                    transition={
+                      isMobile
+                        ? mobileMotion
+                        : { type: "spring", stiffness: 200, damping: 24 }
+                    }
                     className="relative h-full w-full rounded-[56px] bg-[#141219] p-[11px] shadow-phone ring-1 ring-white/10"
                   >
                     <div className="absolute -left-[2px] top-44 h-16 w-[3px] rounded-full bg-[#2a2634]" />
@@ -683,14 +691,26 @@ export default function App() {
                         <motion.div
                           key={cur.key}
                           className="h-full w-full"
-                          initial={{ opacity: 0, x: -26, scale: 0.985 }}
-                          animate={{ opacity: 1, x: 0, scale: 1 }}
-                          exit={{ opacity: 0, x: 26, scale: 0.985 }}
-                          transition={{
-                            type: "spring",
-                            stiffness: 280,
-                            damping: 28,
-                          }}
+                          initial={
+                            isMobile
+                              ? { opacity: 0 }
+                              : { opacity: 0, x: -26, scale: 0.985 }
+                          }
+                          animate={
+                            isMobile
+                              ? { opacity: 1 }
+                              : { opacity: 1, x: 0, scale: 1 }
+                          }
+                          exit={
+                            isMobile
+                              ? { opacity: 0 }
+                              : { opacity: 0, x: 26, scale: 0.985 }
+                          }
+                          transition={
+                            isMobile
+                              ? mobileMotion
+                              : { type: "spring", stiffness: 280, damping: 28 }
+                          }
                         >
                           <Comp />
                         </motion.div>
