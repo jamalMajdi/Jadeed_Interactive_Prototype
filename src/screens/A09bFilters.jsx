@@ -4,6 +4,7 @@ import { X, Star, Check } from 'lucide-react'
 import { Sheet } from '../ui/kit.jsx'
 import { useNav } from '../ui/nav.jsx'
 import { useMStore } from '../ui/mstore.jsx'
+import { products } from '../data/db.js'
 
 const SORTS = [
   { id: 'near', label: 'الأقرب أولًا', sub: 'حسب بُعد المتجر من موقعك' },
@@ -11,6 +12,8 @@ const SORTS = [
   { id: 'rating', label: 'الأعلى تقييمًا', sub: 'حسب متوسط تقييم العملاء' },
 ]
 const RATINGS = ['الكل', '3+ ★', '4+ ★']
+/* التصنيفات من كتالوج المنتجات — قصة SC3: تصفية «حسب السعر أو التقييم أو التصنيف» */
+const ALL_CATS = [...new Set(products.map((p) => p.cat))]
 
 /* خلفية خافتة تمثل الرئيسية خلف اللوحة */
 function Backdrop() {
@@ -38,6 +41,10 @@ export default function A09b() {
   const [sort, setSort] = useState('near')
   const [rate, setRate] = useState('4+ ★')
   const [dist, setDist] = useState(3)
+  const [cats, setCats] = useState([])
+  const toggleCat = (c) => setCats((p) => (p.includes(c) ? p.filter((x) => x !== c) : [...p, c]))
+  const catChip = (on) =>
+    `rounded-full px-3.5 py-1.5 text-[11px] font-extrabold transition ${on ? 'bg-jadeed-purple text-white shadow-soft' : 'border border-jadeed-line bg-white text-jadeed-muted hover:text-jadeed-purple'}`
 
   return (
     <div className="relative h-full bg-jadeed-bg">
@@ -66,6 +73,15 @@ export default function A09b() {
               </span>
               {sort === s.id && <Check size={16} className="shrink-0 text-jadeed-purple" strokeWidth={3} />}
             </button>
+          ))}
+        </div>
+
+        {/* التصنيف — متعدد الاختيار؛ «الكل» = بلا حدود */}
+        <p className="mb-2 mt-5 text-[11px] font-extrabold text-jadeed-muted">التصنيف</p>
+        <div className="flex flex-wrap gap-2">
+          <button onClick={() => setCats([])} className={catChip(cats.length === 0)}>الكل</button>
+          {ALL_CATS.map((c) => (
+            <button key={c} onClick={() => toggleCat(c)} className={catChip(cats.includes(c))}>{c}</button>
           ))}
         </div>
 
@@ -102,13 +118,13 @@ export default function A09b() {
         {/* أزرار */}
         <div className="mt-6 flex gap-2.5">
           <button
-            onClick={() => { setSort('near'); setRate('الكل'); setDist(5); toast('مُسحت كل حدود التصفية', 'info'); go('a06') }}
+            onClick={() => { setSort('near'); setRate('الكل'); setCats([]); setDist(5); toast('مُسحت كل حدود التصفية', 'info'); go('a06') }}
             className="w-1/3 rounded-2xl border border-jadeed-line py-3.5 text-xs font-extrabold text-jadeed-muted transition hover:bg-jadeed-bg"
           >
             مسح الحدود
           </button>
           <button
-            onClick={() => { toast(`طُبّقت التصفية: ${SORTS.find((s) => s.id === sort).label} · تقييم ${rate} · حتى ${dist} كم`, 'ok'); go('a06') }}
+            onClick={() => { toast(`طُبّقت التصفية: ${SORTS.find((s) => s.id === sort).label} · تقييم ${rate}${cats.length ? ` · تصنيف: ${cats.join('، ')}` : ''} · حتى ${dist} كم`, 'ok'); go('a06') }}
             className="flex grow items-center justify-center gap-1.5 rounded-2xl bg-jadeed-orange py-3.5 text-xs font-extrabold text-white shadow-pop transition hover:bg-jadeed-orange-light"
           >
             <Check size={15} strokeWidth={2.6} /> تطبيق

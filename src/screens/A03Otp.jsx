@@ -8,8 +8,10 @@ export default function A03({ state = 'default' }) {
   const { go } = useNav()
   const err = state === 'error'
   const refs = useRef([])
+  const doneRef = useRef(false)
   const [vals, setVals] = useState(err ? ['4', '9', '2', '7'] : ['', '', '', ''])
   const [t, setT] = useState(32)
+  const [verifying, setVerifying] = useState(false)
 
   useEffect(() => {
     const id = setInterval(() => setT((x) => (x > 0 ? x - 1 : 0)), 1000)
@@ -26,6 +28,31 @@ export default function A03({ state = 'default' }) {
     if (d && i < 3) refs.current[i + 1]?.focus()
   }
 
+  /* Backspace على خانة فارغة → رجوع للخانة السابقة (سلوك OTP المعياري) */
+  const onKey = (i, e) => {
+    if (e.key === 'Backspace' && !vals[i] && i > 0) refs.current[i - 1]?.focus()
+  }
+
+  /* لصق الرمز كاملًا → يوزَّع على الخانات الأربع (dir=ltr) */
+  const onPaste = (e) => {
+    const digits = (e.clipboardData.getData('text') || '').replace(/\D/g, '').slice(0, 4)
+    if (!digits) return
+    e.preventDefault()
+    setVals((p) => digits.split('').map((d, i) => d || p[i]))
+    refs.current[Math.min(digits.length, 3)]?.focus()
+  }
+
+  /* تحقق تلقائي فور اكتمال الخانات — خطوة «Verify code» في ACT_AccountRegistration(Login) */
+  useEffect(() => {
+    if (err || verifying || doneRef.current) return
+    if (vals.every((v) => v !== '')) {
+      doneRef.current = true
+      setVerifying(true)
+      const id = setTimeout(() => go('a04'), 600)
+      return () => clearTimeout(id)
+    }
+  }, [vals, err, verifying])
+
   return (
     <div className="flex h-full flex-col bg-white">
       <GradHeader title="رمز التحقق" sub="أرسلنا رمزًا من ٤ أرقام إلى" onBack={() => go('a02')}>
@@ -38,6 +65,7 @@ export default function A03({ state = 'default' }) {
           transition={{ duration: 0.5 }}
           className="flex justify-center gap-3"
           dir="ltr"
+          onPaste={onPaste}
         >
           {vals.map((v, i) => (
             <input
@@ -45,7 +73,10 @@ export default function A03({ state = 'default' }) {
               ref={(el) => (refs.current[i] = el)}
               value={v}
               onChange={(e) => onCh(i, e.target.value)}
+              onKeyDown={(e) => onKey(i, e)}
               inputMode="numeric"
+              aria-label={`خانة الرمز ${i + 1}`}
+              autoComplete={i === 0 ? 'one-time-code' : 'off'}
               className={`h-14 w-14 rounded-2xl border-2 bg-jadeed-bg text-center text-xl font-extrabold outline-none transition focus:border-jadeed-purple focus:bg-white focus:shadow-pop ${err ? 'border-jadeed-red/50 text-jadeed-red' : 'border-jadeed-line'}`}
             />
           ))}
@@ -70,9 +101,10 @@ export default function A03({ state = 'default' }) {
 
         <button
           onClick={() => go('a04')}
-          className="mt-8 w-full rounded-2xl bg-jadeed-orange py-3.5 text-sm font-extrabold text-white shadow-pop transition hover:bg-jadeed-orange-light active:scale-[.98]"
+          disabled={verifying}
+          className={`mt-8 w-full rounded-2xl py-3.5 text-sm font-extrabold text-white shadow-pop transition ${verifying ? 'bg-jadeed-purple-light' : 'bg-jadeed-orange hover:bg-jadeed-orange-light active:scale-[.98]'}`}
         >
-          {err ? 'تحقق مرة أخرى' : 'تحقق ومتابعة'}
+          {verifying ? 'جارٍ التحقق…' : err ? 'تحقق مرة أخرى' : 'تحقق ومتابعة'}
         </button>
       </div>
     </div>

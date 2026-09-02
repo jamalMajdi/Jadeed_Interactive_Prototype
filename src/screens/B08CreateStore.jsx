@@ -3,12 +3,14 @@ import { motion } from 'framer-motion'
 import { Camera, Check, ImagePlus, ShieldAlert, Store } from 'lucide-react'
 import { GradHeader, fadeUp } from '../ui/kit.jsx'
 import { useNav } from '../ui/nav.jsx'
+import { useMStore } from '../ui/mstore.jsx'
 
 const CATS = ['خضار وفواكه', 'بقالة عامة', 'مخبوزات', 'وجبات']
 
 /* B-08 — طلب إنشاء متجر: الشعار إجباري (V3) · B-08g الحارس */
 export default function B08({ state = 'default' }) {
   const { go } = useNav()
+  const { toast } = useMStore()
   const [logo, setLogo] = useState(false)
   const ready = logo
 
@@ -96,7 +98,12 @@ export default function B08({ state = 'default' }) {
         <motion.button
           variants={fadeUp} initial="hidden" animate="show" custom={4}
           disabled={!ready}
-          onClick={() => go('b07')}
+          onClick={() => {
+            /* ACT_requestToCreateStore: save store state "pending review" → Display message
+               "Your request under review from management" — شاشة الانتقال B-05 هي مرساة «قيد المراجعة» */
+            toast('حُفظ طلب متجرك بحالة «قيد المراجعة» — سيصلك إشعار بالنتيجة (M3)', 'ok')
+            go('b05')
+          }}
           className={`mt-6 w-full rounded-2xl py-3.5 text-sm font-extrabold transition active:scale-[.98] ${ready ? 'bg-jadeed-orange text-white shadow-pop hover:bg-jadeed-orange-light' : 'bg-jadeed-gray text-jadeed-ghost'}`}
         >
           {ready ? 'إرسال طلب إنشاء المتجر' : 'ارفع الشعار لتفعيل الزر (إجباري)'}

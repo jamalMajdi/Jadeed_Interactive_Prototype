@@ -5,6 +5,7 @@ import {
   Carrot, Apple, Milk, Egg, Croissant, Cookie, CupSoda, Fish, Sandwich, Drumstick, Store, Banana, Leaf, Salad,
 } from 'lucide-react'
 import { useNav } from './nav.jsx'
+import { useCart } from './cstore.jsx'
 
 /* ── حركات مشتركة ─────────────────────────────── */
 export const fadeUp = {
@@ -106,6 +107,7 @@ const NAV_ITEMS = [
 
 export function BottomNav({ active }) {
   const { go } = useNav()
+  const { count } = useCart()
   return (
     <nav className="z-10 border-t border-jadeed-line bg-white px-2 pb-2 pt-1.5">
       <ul className="grid grid-cols-5">
@@ -115,10 +117,18 @@ export function BottomNav({ active }) {
             <li key={key}>
               <button
                 onClick={() => go(to)}
+                aria-label={label}
+                aria-current={on ? 'page' : undefined}
                 className={`flex w-full flex-col items-center gap-1 rounded-2xl px-2 py-1 transition ${on ? 'text-jadeed-purple' : 'text-jadeed-ghost hover:text-jadeed-purple'}`}
               >
-                <span className={`flex h-9 w-14 items-center justify-center ${on ? 'rounded-full bg-jadeed-tint' : ''}`}>
+                <span className={`relative flex h-9 w-14 items-center justify-center ${on ? 'rounded-full bg-jadeed-tint' : ''}`}>
                   <Icon size={21} strokeWidth={1.9} />
+                  {/* شارة السلة الحية — عدد الوحدات الفعلي من مخزن السلة (UC-03) */}
+                  {key === 'cart' && count > 0 && (
+                    <span className="absolute -top-1 end-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-jadeed-orange px-1 text-[9px] font-extrabold text-white ring-2 ring-white">
+                      {count}
+                    </span>
+                  )}
                 </span>
                 <span className={`text-[11px] ${on ? 'font-extrabold' : 'font-bold'}`}>{label}</span>
               </button>
@@ -176,7 +186,7 @@ export function GradHeader({ title, sub, onBack, children }) {
       <StatusBar light />
       <div className="mt-2 flex items-center gap-3">
         {onBack && (
-          <button onClick={onBack} className="rounded-full bg-white/15 p-2 transition hover:bg-white/25">
+          <button onClick={onBack} aria-label="رجوع" className="rounded-full bg-white/15 p-2 transition hover:bg-white/25">
             <ChevronRight size={18} />
           </button>
         )}

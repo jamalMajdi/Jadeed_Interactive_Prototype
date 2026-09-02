@@ -4,6 +4,7 @@ import { ChevronRight, ShoppingCart, Minus, Plus, SearchX, Store as StoreIcon, A
 import { StatusBar, RatingChip, ProductIcon, fadeUp } from '../ui/kit.jsx'
 import { useNav } from '../ui/nav.jsx'
 import { useMStore } from '../ui/mstore.jsx'
+import { useCart } from '../ui/cstore.jsx'
 import { fmt } from '../data/db.js'
 
 const P = { id: 'p1', name: 'طماطم بلدي طازجة', store: 'بقالة النور', price: 900, unit: 'كيلو', rating: 4.6, icon: 'Carrot' }
@@ -37,6 +38,7 @@ function NotFound() {
 export default function A08({ state = 'default' }) {
   const { go } = useNav()
   const { toast } = useMStore()
+  const { add } = useCart()
   const [qty, setQty] = useState(2)
   const oos = state === 'oos'
   const total = P.price * qty
@@ -135,7 +137,12 @@ export default function A08({ state = 'default' }) {
         <motion.button
           whileTap={{ scale: 0.97 }}
           disabled={oos}
-          onClick={() => go('a10')}
+          onClick={() => {
+            /* ACT_ManageCart: Add product to cart → «display added cart» → مراجعة السلة */
+            add(P, qty)
+            toast(`أُضيفت «${P.name}» ×${qty} إلى السلة ✓`, 'ok')
+            go('a10')
+          }}
           className={`flex grow items-center justify-center gap-2 rounded-2xl py-3.5 text-sm font-extrabold transition ${oos ? 'bg-jadeed-gray text-jadeed-ghost' : 'bg-jadeed-orange text-white shadow-pop hover:bg-jadeed-orange-light'}`}
         >
           {oos ? (

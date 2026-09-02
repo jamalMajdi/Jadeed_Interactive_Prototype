@@ -20,6 +20,8 @@ export function AStoreProvider({ children }) {
   const [users, setUsers] = useState(SEED_USERS)
   const [cats, setCats] = useState(SEED_CATEGORIES)
   const [approvedStores, setApprovedStores] = useState([])
+  /* سجل النشاط الحي — Record Audit Log وارد حرفيًا في ACT_ManageUsers وACT_VerifyMerchants وact_reviewStoreRequests */
+  const [log, setLog] = useState([])
   const [toasts, setToasts] = useState([])
 
   const toast = useCallback((msg, tone = 'ok') => {
@@ -28,37 +30,64 @@ export function AStoreProvider({ children }) {
     setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 3200)
   }, [])
 
+  /* تسجيل حدث إداري في سجل النشاط (C-15) — يُستدعى من كل قرار */
+  const logAct = useCallback((action, tone = 'ok') => {
+    setLog((l) => [...l, { time: 'الآن', actor: 'admin@jadeed.ye', action, tone }])
+  }, [])
+
   const actions = {
-    /* طلبات التوثيق — C-04: الموافقة تُظهر التاجر فورًا في تطبيق العميل (A-06) */
+    /* طلبات التوثيق — C-04: الموافقة تُظهر التاجر فورًا في تطبيق العميل (A-06) · الرفض بسبب إلزامي (UC-03/A1) */
     approveVerify: (id, store) => {
       setVerify((v) => v.filter((r) => r.id !== id))
       setUsers((u) => [...u, { id: 'm' + id, name: store, type: 'تاجر', phone: '—', orders: 0, status: 'active' }])
       setApprovedStores((s) => [...s, { id: 'as-' + id, name: store, cat: 'موثّق حديثًا · من لوحة الإدارة', rating: 4.5, dist: 'قريب منك', eta: '~٢٠ د', open: true }])
+      logAct(`قبول طلب التوثيق ${id} — توثيق «${store}» وإشعار التاجر`, 'ok')
       toast(`وُثّق «${store}» ✓ — ظهر متجره فورًا في تطبيق العميل`, 'ok')
     },
-    rejectVerify: (id, store) => { setVerify((v) => v.filter((r) => r.id !== id)); toast(`رُفض طلب «${store}» — أُشعر التاجر بالسبب`, 'err') },
+    rejectVerify: (id, store, reason = 'لا تستوفي معايير التوثيق', fraud = false) => {
+      setVerify((v) => v.filter((r) => r.id !== id))
+      if (fraud) {
+        /* مسار الاحتيال A3 + عقدة Fraud Suspected? في ACT_VerifyMerchants: رفض + حظر رقم الجوال نهائيًا */
+        setUsers((u) => [...u, { id: 'm' + id, name: store, type: 'تاجر', phone: 'محظور — A3', orders: 0, status: 'blocked', reason }])
+        logAct(`رفض طلب ${id} («${store}») — السبب: ${reason} · Suspected Fraud + حظر الجوال (A3)`, 'err')
+        toast(`رُفض طلب «${store}» مع اشتباه احتيال — حُظر رقم الجوال نهائيًا (A3)`, 'err')
+      } else {
+        logAct(`رفض طلب التوثيق ${id} («${store}») — السبب: ${reason}`, 'err')
+        toast(`رُفض طلب «${store}» — أُشعر التاجر بالسبب`, 'err')
+      }
+    },
 
     /* طلبات المتاجر — C-06: القبول ينشر المتجر للعملاء فورًا · الرفض بسبب موثق (حارس State-Store_Creation_Request) */
     approveStore: (id, store) => {
       setStoreReq((s) => s.filter((r) => r.id !== id))
       setApprovedStores((s) => [...s, { id: 'as-' + id, name: store, cat: 'مُعتمد حديثًا · من لوحة الإدارة', rating: 4.5, dist: 'قريب منك', eta: '~٢٥ د', open: true }])
+      logAct(`قبول طلب المتجر ${id} — نشر «${store}» في المتاجر القريبة`, 'ok')
       toast(`قُبل متجر «${store}» ✓ — نُشر للعملاء في «المتاجر القريبة»`, 'ok')
     },
     rejectStore: (id, store, reason = 'لا تستوفي معايير النشر') => {
       setStoreReq((s) => s.filter((r) => r.id !== id))
+      logAct(`رفض طلب المتجر ${id} («${store}») — السبب: ${reason}`, 'err')
       toast(`رُفض طلب متجر «${store}» — السبب: ${reason} (متاح لإعادة التقديم)`, 'err')
     },
 
     /* المستخدمون — C-07/C-08: الحظر بسبب إلزامي ينعكس على شاشة العميل A-17 */
-    blockUser: (id, name, reason) => { setUsers((u) => u.map((x) => (x.id === id ? { ...x, status: 'blocked', reason } : x))); toast(`حُظر «${name}» — السبب: ${reason}`, 'err') },
-    unblockUser: (id, name) => { setUsers((u) => u.map((x) => (x.id === id ? { ...x, status: 'active', reason: undefined } : x))); toast(`رُفع الحظر عن «${name}» ✓ — أُشعر عبر إشعار`, 'ok') },
+    blockUser: (id, name, reason) => {
+      setUsers((u) => u.map((x) => (x.id === id ? { ...x, status: 'blocked', reason } : x)))
+      logAct(`حظر «${name}» — السبب: ${reason} + إشعار المستخدم`, 'err')
+      toast(`حُظر «${name}» — السبب: ${reason}`, 'err')
+    },
+    unblockUser: (id, name) => {
+      setUsers((u) => u.map((x) => (x.id === id ? { ...x, status: 'active', reason: undefined } : x)))
+      logAct(`رفع الحظر عن «${name}» + إشعار المستخدم`, 'ok')
+      toast(`رُفع الحظر عن «${name}» ✓ — أُشعر عبر إشعار`, 'ok')
+    },
 
     /* الفئات — C-18 ★: تنعكس فورًا على قائمة تصنيف التاجر (B-11) وفلاتر العميل (A-07) */
     addCat: (name) => setCats((c) => [...c, { id: 'c' + Date.now(), name, products: 0 }]),
     delCat: (id) => setCats((c) => c.filter((x) => x.id !== id)),
   }
 
-  return <AStoreCtx.Provider value={{ verify, storeReq, users, cats, approvedStores, toasts, toast, ...actions }}>{children}</AStoreCtx.Provider>
+  return <AStoreCtx.Provider value={{ verify, storeReq, users, cats, approvedStores, log, toasts, toast, ...actions }}>{children}</AStoreCtx.Provider>
 }
 
 /* مضيف تنبيهات الإدارة — أعلى يسار نافذة سطح المكتب */

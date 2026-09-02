@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft, PackageOpen } from 'lucide-react'
 import { StatusBar, BottomNav, fadeUp } from '../ui/kit.jsx'
 import { useNav } from '../ui/nav.jsx'
 import { orders, STATUS_META, fmt } from '../data/db.js'
@@ -81,7 +81,19 @@ export default function A13() {
             )
           })}
           {list.length === 0 && (
-            <p className="pt-16 text-center text-xs text-jadeed-muted">لا توجد طلبات في هذا التصنيف</p>
+            <div className="flex flex-col items-center gap-2.5 pb-6 pt-12 text-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-jadeed-tint text-jadeed-purple">
+                <PackageOpen size={30} strokeWidth={1.6} />
+              </div>
+              <p className="text-sm font-extrabold">لا توجد طلبات في هذا التصنيف</p>
+              <p className="max-w-56 text-xs leading-5 text-jadeed-muted">عند إرسال طلبك سيظهر هنا مع حالته لحظة بلحظة</p>
+              <button
+                onClick={() => go('a06')}
+                className="mt-1 rounded-2xl bg-jadeed-orange px-5 py-2.5 text-[11px] font-extrabold text-white shadow-pop transition hover:bg-jadeed-orange-light"
+              >
+                ابدأ التسوق
+              </button>
+            </div>
           )}
         </div>
       </div>

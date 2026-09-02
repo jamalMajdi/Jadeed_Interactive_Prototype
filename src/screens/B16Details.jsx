@@ -1,15 +1,26 @@
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Bike, Check, ChevronRight, MapPin, Pencil, Phone, StickyNote, XCircle } from 'lucide-react'
-import { GradHeader, fadeUp } from '../ui/kit.jsx'
+import { Dialog, GradHeader, fadeUp } from '../ui/kit.jsx'
 import { useNav } from '../ui/nav.jsx'
 import { useMStore } from '../ui/mstore.jsx'
 import { ORDER_STATE_META, ORDER_FLOW, SEED_ORDERS } from '../data/merchant.js'
 import { fmt } from '../data/db.js'
 
+/* أسباب الرفض المعتادة — العميل يراها في A-14r والرفض يُشعر به عبر sendNotification
+   (STATE_Order: reject / notifyUser() · ACT_ManageOrderLifeCycle: Reject order → notify customer) */
+const REJECT_REASONS = [
+  'نفدت الكمية — المنتج غير متوفر حاليًا',
+  'المتجر مغلق مؤقتًا الآن',
+  'العنوان خارج نطاق التوصيل',
+]
+
 /* B-16 — تفاصيل الطلب بسبع حالاتها: جديد/مقبول/تحضير/جاهز/توصيل/تم/مرفوض */
 export default function B16({ state = 'new' }) {
   const { go } = useNav()
   const { orders, accept, startPrep, markReady, handOver, markDelivered, reject } = useMStore()
+  const [rejOpen, setRejOpen] = useState(false)
+  const [reason, setReason] = useState(REJECT_REASONS[0])
 
   const order = orders.find((o) => o.status === state) || SEED_ORDERS.find((o) => o.status === state)
   const meta = ORDER_STATE_META[order.status]
@@ -96,7 +107,7 @@ export default function B16({ state = 'new' }) {
         {order.status === 'new' && (
           <div className="flex gap-2.5">
             <button
-              onClick={() => { reject(order.id); go('b16rej') }}
+              onClick={() => setRejOpen(true)}
               className="w-1/3 rounded-2xl border-2 border-jadeed-red/30 py-3 text-xs font-extrabold text-jadeed-red transition hover:bg-jadeed-red-tint"
             >
               رفض
@@ -138,6 +149,51 @@ export default function B16({ state = 'new' }) {
           </button>
         )}
       </div>
+
+      {/* حوار سبب الرفض — السبب إلزامي لأنه يُشعر به العميل (A-14r يعرضه حرفيًا) */}
+      {rejOpen && (
+        <Dialog>
+          <div className="flex items-start gap-3">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-jadeed-red-tint text-jadeed-red">
+              <XCircle size={24} />
+            </span>
+            <div>
+              <h3 className="text-sm font-extrabold">رفض الطلب <span dir="ltr" className="text-jadeed-purple">#{order.id}</span>؟</h3>
+              <p className="mt-1 text-[11px] leading-5 text-jadeed-muted">اختر سبب الرفض — سيصله إشعار فوري بالسبب نفسه (notifyUser)</p>
+            </div>
+          </div>
+
+          <div className="mt-4 space-y-2">
+            {REJECT_REASONS.map((r) => (
+              <button
+                key={r}
+                onClick={() => setReason(r)}
+                className={`flex w-full items-center gap-2.5 rounded-2xl border-2 p-3 text-start text-[11px] font-bold transition ${reason === r ? 'border-jadeed-purple bg-jadeed-tint text-jadeed-purple' : 'border-jadeed-line bg-white text-jadeed-muted'}`}
+              >
+                <span className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border-2 ${reason === r ? 'border-jadeed-purple' : 'border-jadeed-line'}`}>
+                  {reason === r && <span className="h-2 w-2 rounded-full bg-jadeed-purple" />}
+                </span>
+                {r}
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-5 flex gap-2.5">
+            <button
+              onClick={() => setRejOpen(false)}
+              className="w-1/3 rounded-2xl border border-jadeed-line py-3 text-xs font-extrabold text-jadeed-muted transition hover:bg-jadeed-bg"
+            >
+              تراجع
+            </button>
+            <button
+              onClick={() => { reject(order.id, reason); go('b16rej') }}
+              className="w-2/3 rounded-2xl bg-jadeed-red py-3 text-xs font-extrabold text-white shadow-pop transition hover:opacity-90"
+            >
+              تأكيد الرفض وإشعار العميل
+            </button>
+          </div>
+        </Dialog>
+      )}
     </div>
   )
 }

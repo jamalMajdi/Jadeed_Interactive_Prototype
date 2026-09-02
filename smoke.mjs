@@ -13,6 +13,7 @@ const server = await createServer({
 const { NavCtx } = await server.ssrLoadModule('/src/ui/nav.jsx')
 const { MStoreProvider } = await server.ssrLoadModule('/src/ui/mstore.jsx')
 const { AStoreProvider } = await server.ssrLoadModule('/src/ui/astore.jsx')
+const { CartProvider } = await server.ssrLoadModule('/src/ui/cstore.jsx')
 const { SCREENS } = await server.ssrLoadModule('/src/ui/registry.jsx')
 const { MERCHANT_SCREENS } = await server.ssrLoadModule('/src/ui/registry_m.jsx')
 const { ADMIN_SCREENS } = await server.ssrLoadModule('/src/ui/registry_a.jsx')
@@ -31,9 +32,13 @@ for (const [app, s] of all) {
       NavCtx.Provider,
       { value: { current: s, go: () => {}, list: [] } },
       React.createElement(
-        AStoreProvider,
+        CartProvider,
         null,
-        React.createElement(MStoreProvider, null, React.createElement(s.Comp)),
+        React.createElement(
+          AStoreProvider,
+          null,
+          React.createElement(MStoreProvider, null, React.createElement(s.Comp)),
+        ),
       ),
     )
     const html = renderToString(el)

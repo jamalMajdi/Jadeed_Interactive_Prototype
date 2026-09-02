@@ -1,8 +1,17 @@
 // بيانات وهمية — لوحة إدارة «جديد» (مربوطة ببيانات العميل والتاجر: نفس المتاجر والطلبات)
 
 export const ADMINS = [
-  { name: 'أبو فهد', role: 'مدير عام', email: 'admin@jadeed.ye' },
+  { name: 'أبو فهد', role: 'مدير عام', email: 'admin@jadeed.ye', status: 'active', password: '123456' },
+  { name: 'سالم', role: 'مشرف توثيق', email: 'salem@jadeed.ye', status: 'active', password: '123456' },
+  { name: 'ريم', role: 'مراجع محتوى', email: 'reem@jadeed.ye', status: 'inactive', password: '123456' },
 ]
+
+/* مشرفون معيّنون حاليًا (C-14) — سالم وريم وردا في سجل النشاط C-15 */
+export const SEED_MODERATORS = [
+  { id: 'mod1', name: 'سالم', email: 'salem@jadeed.ye', roles: ['مشرف توثيق'], since: 'مايو 2026' },
+  { id: 'mod2', name: 'ريم', email: 'reem@jadeed.ye', roles: ['مراجع محتوى'], since: 'يونيو 2026' },
+]
+export const MOD_ROLE_OPTIONS = ['مشرف توثيق', 'مراجع محتوى', 'دعم العملاء']
 
 /* طلبات توثيق التجار (C-03/C-04) — الحالات: قيد المراجعة · مستندات ناقصة (V3) */
 export const SEED_VERIFY = [

@@ -1,19 +1,20 @@
-import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { ChevronRight, Minus, Plus, Trash2, ShoppingCart, ArrowLeft } from 'lucide-react'
 import { StatusBar, ProductIcon, tileCls, fadeUp, BottomNav, EmptyState } from '../ui/kit.jsx'
 import { useNav } from '../ui/nav.jsx'
 import { useMStore } from '../ui/mstore.jsx'
-import { cartItems as SEED, DELIVERY_FEE, fmt } from '../data/db.js'
+import { useCart } from '../ui/cstore.jsx'
+import { DELIVERY_FEE, fmt } from '../data/db.js'
 
 export default function A10({ state = 'default' }) {
   const { go } = useNav()
   const { toast } = useMStore()
-  const [items, setItems] = useState(SEED)
-
-  const setQty = (id, d) =>
-    setItems((p) => p.map((it) => (it.id === id ? { ...it, qty: Math.max(1, Math.min(9, it.qty + d)) } : it)))
-  const remove = (id) => setItems((p) => p.filter((it) => it.id !== id))
+  /* السلة من المخزن المركزي — تبقى عبر الشاشات (شرط UC-03 اللاحق) */
+  const { items, setQty: setAbs, remove, clear } = useCart()
+  const setQty = (id, d) => {
+    const cur = items.find((it) => it.id === id)?.qty ?? 1
+    setAbs(id, cur + d)
+  }
 
   if (state === 'empty' || items.length === 0) {
     return (
@@ -62,7 +63,7 @@ export default function A10({ state = 'default' }) {
           <h1 className="text-lg font-extrabold">السلة</h1>
           <span className="rounded-full bg-jadeed-tint px-2.5 py-1 text-[11px] font-extrabold text-jadeed-purple">{count} عناصر</span>
           <button
-            onClick={() => { setItems([]); toast('أُفرغت السلة بالكامل', 'info') }}
+            onClick={() => { clear(); toast('أُفرغت السلة بالكامل', 'info') }}
             className="mr-auto flex items-center gap-1 rounded-full bg-jadeed-red-tint px-3 py-1.5 text-[10px] font-extrabold text-jadeed-red transition hover:shadow-soft"
           >
             <Trash2 size={12} /> إفراغ السلة

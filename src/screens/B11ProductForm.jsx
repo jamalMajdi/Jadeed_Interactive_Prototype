@@ -8,7 +8,10 @@ import { useAStore } from '../ui/astore.jsx'
 
 const UNITS = ['كيلو', 'عبوة', 'حبة', 'لتر', 'طبق']
 
-/* B-11 — إضافة منتج (تصنيف إجباري — V3) · B-12 — تعديل منتج */
+/* B-11 — إضافة منتج (تصنيف إجباري — V3) · B-12 — تعديل منتج
+   التحقق من اكتمال البيانات قبل الحفظ: ACT_ManageProducts_Add «Validate Product Details →
+   Show Error Message» + بديل UC-02 (Squad-2): «إذا كانت البيانات ناقصة، يعرض النظام رسالة
+   تنبيه ويطلب استكمالها» — مقابل validateProductData() في كلاس Product (V4) */
 export default function B11({ state = 'add' }) {
   const { go } = useNav()
   const { toast } = useMStore()
@@ -16,7 +19,13 @@ export default function B11({ state = 'add' }) {
   const CATS = ['— اختر التصنيف —', ...cats.map((c) => c.name)] // حية من إدارة الفئات C-18 ★
   const edit = state === 'edit'
   const [cat, setCat] = useState(edit ? 'خضار وفواكه' : '')
+  const [name, setName] = useState(edit ? 'طماطم بلدي طازجة' : '')
+  const [price, setPrice] = useState(edit ? '900' : '')
+  const [stock, setStock] = useState(edit ? '18' : '')
   const badCat = !cat || cat.startsWith('—')
+  const priceBad = price !== '' && !(Number(price) > 0)
+  const coreMissing = [!name.trim(), price === '' || priceBad, stock === ''].filter(Boolean).length
+  const blocked = badCat || coreMissing > 0
 
   return (
     <div className="flex h-full flex-col bg-white">
@@ -41,7 +50,8 @@ export default function B11({ state = 'add' }) {
           <motion.div variants={fadeUp} initial="hidden" animate="show" custom={1}>
             <span className="mb-1 block text-[11px] font-bold">اسم المنتج *</span>
             <input
-              defaultValue={edit ? 'طماطم بلدي طازجة' : ''}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               placeholder="مثال: طماطم بلدي طازجة"
               className="w-full rounded-xl border border-jadeed-line bg-jadeed-bg px-3.5 py-3 text-xs outline-none focus:border-jadeed-purple focus:bg-white"
             />
@@ -68,7 +78,13 @@ export default function B11({ state = 'add' }) {
           <div className="grid grid-cols-2 gap-3">
             <motion.div variants={fadeUp} initial="hidden" animate="show" custom={3}>
               <span className="mb-1 block text-[11px] font-bold">السعر (ريال) *</span>
-              <input defaultValue={edit ? 900 : ''} placeholder="0" inputMode="numeric" className="w-full rounded-xl border border-jadeed-line bg-jadeed-bg px-3.5 py-3 text-xs outline-none focus:border-jadeed-purple focus:bg-white" />
+              <input
+                value={price}
+                onChange={(e) => setPrice(e.target.value.replace(/\D/g, '').slice(0, 7))}
+                placeholder="0" inputMode="numeric"
+                className={`w-full rounded-xl border bg-jadeed-bg px-3.5 py-3 text-xs outline-none focus:bg-white ${priceBad ? 'border-jadeed-red/50' : 'border-jadeed-line focus:border-jadeed-purple'}`}
+              />
+              {priceBad && <span className="mt-1 block text-[10px] font-bold text-jadeed-red">أدخل سعرًا أكبر من صفر</span>}
             </motion.div>
             <motion.div variants={fadeUp} initial="hidden" animate="show" custom={3}>
               <span className="mb-1 block text-[11px] font-bold">وحدة البيع *</span>
@@ -83,18 +99,30 @@ export default function B11({ state = 'add' }) {
 
           <motion.div variants={fadeUp} initial="hidden" animate="show" custom={4}>
             <span className="mb-1 block text-[11px] font-bold">الكمية المتوفرة *</span>
-            <input defaultValue={edit ? 18 : ''} placeholder="0" inputMode="numeric" className="w-full rounded-xl border border-jadeed-line bg-jadeed-bg px-3.5 py-3 text-xs outline-none focus:border-jadeed-purple focus:bg-white" />
-            <span className="mt-1 block text-[10px] text-jadeed-muted">عند وصولها ٠ يظهر المنتج «غير متوفر» للعملاء تلقائيًا</span>
+            <input
+              value={stock}
+              onChange={(e) => setStock(e.target.value.replace(/\D/g, '').slice(0, 5))}
+              placeholder="0" inputMode="numeric"
+              className="w-full rounded-xl border border-jadeed-line bg-jadeed-bg px-3.5 py-3 text-xs outline-none focus:border-jadeed-purple focus:bg-white"
+            />
+            <span className="mt-1 block text-[10px] text-jadeed-muted">عند وصولها ٠ يظهر المنتج «غير متوفر» للعملاء تلقائيًا (isProductInStock — V4)</span>
           </motion.div>
         </div>
 
+        {/* رسالة الاستكمال — بديل UC-02: «البيانات ناقصة → رسالة تنبيه ويطلب استكمالها» */}
+        {blocked && !edit && (
+          <p className="mt-4 rounded-xl bg-jadeed-red-tint px-3 py-2 text-[10px] font-bold leading-4 text-jadeed-red">
+            بيانات ناقصة — أكمل {coreMissing > 0 ? `الحقول الإجبارية (${coreMissing} متبقية)` : 'اختيار التصنيف'} قبل النشر
+          </p>
+        )}
+
         <motion.button
           variants={fadeUp} initial="hidden" animate="show" custom={5}
-          disabled={badCat}
+          disabled={blocked}
           onClick={() => { toast(edit ? 'حُفظت تعديلات المنتج ✓' : 'نُشر المنتج ✓ — ظاهر للعملاء الآن', 'ok'); go('b10') }}
-          className={`mt-6 w-full rounded-2xl py-3.5 text-sm font-extrabold transition active:scale-[.98] ${badCat ? 'bg-jadeed-gray text-jadeed-ghost' : 'bg-jadeed-orange text-white shadow-pop hover:bg-jadeed-orange-light'}`}
+          className={`mt-4 w-full rounded-2xl py-3.5 text-sm font-extrabold transition active:scale-[.98] ${blocked ? 'bg-jadeed-gray text-jadeed-ghost' : 'bg-jadeed-orange text-white shadow-pop hover:bg-jadeed-orange-light'}`}
         >
-          {edit ? 'حفظ التعديلات' : 'نشر المنتج'}
+          {blocked ? (edit ? 'صحّح البيانات أولًا' : 'أكمل البيانات الناقصة أولًا') : edit ? 'حفظ التعديلات' : 'نشر المنتج'}
         </motion.button>
 
         <p className="mt-3 flex items-start justify-center gap-1 text-center text-[10px] leading-4 text-jadeed-ghost">
